@@ -32,8 +32,8 @@ final class Key<T> implements Comparable {
     /**
      * Constructor.
      *
-     * @param key          a object key in the cache.
-     * @param milliseconds a lifetime of objects (milliseconds).
+     * @param key          the object key in the cache.
+     * @param milliseconds the lifetime of objects (milliseconds).
      */
     Key(final T key, final long milliseconds) {
         this.key = key;
@@ -44,7 +44,7 @@ final class Key<T> implements Comparable {
     /**
      * Constructor.
      *
-     * @param key a object key in the cache.
+     * @param key the object key in the cache.
      */
     Key(final T key) {
         this(key, DEFAULT_TIMEOUT);
@@ -89,7 +89,7 @@ final class Key<T> implements Comparable {
     /**
      * Indicates whether some other object is "equal to" this one.
      *
-     * @param object a reference object with which to compare.
+     * @param object the reference object with which to compare.
      * @return Returns true if this object is the same
      * as the object argument, otherwise returns false.
      */
@@ -144,16 +144,12 @@ final class Key<T> implements Comparable {
      */
     @Override
     public int compareTo(final Object object) {
-        int result = 0;
+        int result;
         if (isNull(object)) {
             result = -1;
         } else {
             final Key other = (Key) object;
-            if (this.timeout < other.timeout) {
-                result = 1;
-            } else if (this.timeout > other.timeout) {
-                result = -1;
-            }
+            result = (int) (other.timeout - this.timeout);
         }
         return result;
     }
