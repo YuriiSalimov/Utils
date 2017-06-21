@@ -1,7 +1,5 @@
 package com.alex.utils.sender;
 
-import org.apache.log4j.Logger;
-
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -13,17 +11,11 @@ import java.util.Properties;
 import static com.alex.utils.validator.ObjectValidator.isNotEmpty;
 
 /**
- * The class implements a set of methods for sending letters by e-mail.
+ * The class implements a set of methods for sending letters by E-mail.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
-public final class SenderImpl implements Sender {
-
-    /**
-     * The object for logging information.
-     */
-    private static final Logger LOGGER = Logger.getLogger(SenderImpl.class);
+public final class EmailSender implements Sender {
 
     /**
      * The sender charset.
@@ -69,7 +61,7 @@ public final class SenderImpl implements Sender {
      * @param senderEmail     the sender E-mail.
      * @param senderEmailPass the sender E-mail password.
      */
-    public SenderImpl(
+    public EmailSender(
             final String subject,
             final String text,
             final String recipientEmail,
@@ -84,7 +76,7 @@ public final class SenderImpl implements Sender {
     }
 
     /**
-     * Sends a message to an E-mail in new thread.
+     * Sends a message to an E-mail in a new thread.
      */
     @Override
     public void send() {
@@ -96,7 +88,7 @@ public final class SenderImpl implements Sender {
     }
 
     /**
-     * Used to create a SenderImpl thread, starting the thread causes
+     * Used to create a EmailSender thread, starting the thread causes
      * the object's run method to be called in that separately executing
      * thread.
      */
@@ -109,7 +101,7 @@ public final class SenderImpl implements Sender {
                     this.senderEmail, this.senderEmailPass
             );
         } catch (UnsupportedEncodingException | MessagingException ex) {
-            LOGGER.error(ex.getMessage(), ex);
+            ex.printStackTrace();
         }
     }
 
@@ -121,11 +113,9 @@ public final class SenderImpl implements Sender {
      * false otherwise.
      */
     private boolean isValidated() {
-        return isNotEmpty(this.subject) &&
-                isNotEmpty(this.text) &&
+        return isNotEmpty(this.subject) && isNotEmpty(this.text) &&
                 isNotEmpty(this.recipientEmail) &&
-                isNotEmpty(this.senderEmail) &&
-                isNotEmpty(this.senderEmailPass);
+                isNotEmpty(this.senderEmail) && isNotEmpty(this.senderEmailPass);
     }
 
     /**
@@ -141,7 +131,7 @@ public final class SenderImpl implements Sender {
      * @throws UnsupportedEncodingException If the encoding fails
      *                                      in MimeUtility.encodeText(...).
      */
-    private static void prepareAndSend(
+    private void prepareAndSend(
             final String subject,
             final String text,
             final String recipientEmail,
@@ -149,19 +139,16 @@ public final class SenderImpl implements Sender {
             final String senderEmailPass
     ) throws UnsupportedEncodingException, MessagingException {
         try {
+            final Properties tlsProperties = getTLSProperties();
             doWork(
-                    getTLSProperties(),
-                    subject, text,
-                    recipientEmail,
-                    senderEmail, senderEmailPass
+                    tlsProperties, subject, text,
+                    recipientEmail, senderEmail, senderEmailPass
             );
         } catch (UnsupportedEncodingException | MessagingException ex) {
-            LOGGER.error(ex.getMessage(), ex);
+            final Properties sslProperties = getSSLProperties();
             doWork(
-                    getSSLProperties(),
-                    subject, text,
-                    recipientEmail,
-                    senderEmail, senderEmailPass
+                    sslProperties, subject, text,
+                    recipientEmail, senderEmail, senderEmailPass
             );
         }
     }
@@ -182,7 +169,7 @@ public final class SenderImpl implements Sender {
      * @throws UnsupportedEncodingException If the encoding fails
      *                                      in MimeUtility.encodeText(...).
      */
-    private static void doWork(
+    private void doWork(
             final Properties properties,
             final String subject,
             final String text,
@@ -190,13 +177,11 @@ public final class SenderImpl implements Sender {
             final String senderEmail,
             final String senderEmailPass
     ) throws UnsupportedEncodingException, MessagingException {
-        sendMessage(
-                generateMessage(
-                        getSession(properties, senderEmail, senderEmailPass),
-                        subject, text,
-                        recipientEmail, senderEmail
-                )
+        final Session session = getSession(properties, senderEmail, senderEmailPass);
+        final Message message = generateMessage(
+                session, subject, text, recipientEmail, senderEmail
         );
+        sendMessage(message);
     }
 
     /**
@@ -205,7 +190,7 @@ public final class SenderImpl implements Sender {
      * @param message the sender to recipient from sender.
      * @throws MessagingException If the parse failed in Transport.send(...).
      */
-    private static void sendMessage(final Message message) throws MessagingException {
+    private void sendMessage(final Message message) throws MessagingException {
         Transport.send(message);
     }
 
@@ -223,7 +208,7 @@ public final class SenderImpl implements Sender {
      * @throws UnsupportedEncodingException If the encoding fails
      *                                      in MimeUtility.encodeText(...).
      */
-    private static Message generateMessage(
+    private Message generateMessage(
             final Session session,
             final String subject,
             final String text,
@@ -231,19 +216,27 @@ public final class SenderImpl implements Sender {
             final String senderEmail
     ) throws MessagingException, UnsupportedEncodingException {
         final Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(senderEmail));
-        message.setRecipients(
-                Message.RecipientType.TO,
-                InternetAddress.parse(recipientEmail)
-        );
-        message.setSubject(
-                MimeUtility.encodeText(
-                        subject, CHARSET, ENCODING
-                )
-        );
-        message.setContent(text, getContent());
+        final InternetAddress address = new InternetAddress(senderEmail);
+        message.setFrom(address);
+        final InternetAddress[] addresses = InternetAddress.parse(recipientEmail);
+        message.setRecipients(Message.RecipientType.TO, addresses);
+        final String encodeText = encodeText(subject);
+        message.setSubject(encodeText);
+        final String content = getContent();
+        message.setContent(text, content);
         message.setSentDate(new Date());
         return message;
+    }
+
+    /**
+     * Encodes the incoming text.
+     *
+     * @param text the text to encode (newer null).
+     * @return The encoded text.
+     * @throws UnsupportedEncodingException
+     */
+    private String encodeText(final String text) throws UnsupportedEncodingException {
+        return MimeUtility.encodeText(text, CHARSET, ENCODING);
     }
 
     /**
@@ -251,47 +244,22 @@ public final class SenderImpl implements Sender {
      *
      * @return The content.
      */
-    private static String getContent() {
+    private String getContent() {
         return "text/plain;charset=" + CHARSET;
     }
 
     /**
      * Creates and returns Session object which represents a mail session.
      *
-     * @param properties      the Properties object represents
-     *                        the persistent set of TLS or SSL properties
-     * @param senderEmail     the sender E-mail.
-     * @param senderEmailPass the sender E-mail password.
+     * @param properties the Properties object represents
+     *                   the persistent set of TLS or SSL properties
+     * @param email      the sender E-mail.
+     * @param password   the sender E-mail password.
      * @return The Session object (newer null).
      */
-    private static Session getSession(
-            final Properties properties,
-            final String senderEmail,
-            final String senderEmailPass
-    ) {
-        return Session.getDefaultInstance(
-                properties,
-                getAuthenticator(senderEmail, senderEmailPass)
-        );
-    }
-
-    /**
-     * Creates and returns Authenticator.
-     *
-     * @param senderEmail     the sender E-mail.
-     * @param senderEmailPass the sender E-mail password.
-     * @return The Authenticator object (newer null).
-     */
-    private static Authenticator getAuthenticator(
-            final String senderEmail,
-            final String senderEmailPass
-    ) {
-        return new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderEmail, senderEmailPass);
-            }
-        };
+    private Session getSession(final Properties properties, final String email, final String password) {
+        final Authenticator authenticator = new SenderAuthenticator(email, password);
+        return Session.getDefaultInstance(properties, authenticator);
     }
 
     /**
@@ -299,13 +267,13 @@ public final class SenderImpl implements Sender {
      *
      * @return The Properties object.
      */
-    private static Properties getTLSProperties() {
-        final Properties properties = new Properties();
-        properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.smtp.host", "smtp.gmail.com");
-        properties.put("mail.smtp.port", "587");
-        return properties;
+    private Properties getTLSProperties() {
+        final Properties tlsProperties = new Properties();
+        tlsProperties.put("mail.smtp.auth", "true");
+        tlsProperties.put("mail.smtp.starttls.enable", "true");
+        tlsProperties.put("mail.smtp.host", "smtp.gmail.com");
+        tlsProperties.put("mail.smtp.port", "587");
+        return tlsProperties;
     }
 
     /**
@@ -313,13 +281,13 @@ public final class SenderImpl implements Sender {
      *
      * @return The Properties object.
      */
-    private static Properties getSSLProperties() {
-        final Properties properties = new Properties();
-        properties.put("mail.smtp.host", "smtp.gmail.com");
-        properties.put("mail.smtp.socketFactory.port", "465");
-        properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.port", "465");
-        return properties;
+    private Properties getSSLProperties() {
+        final Properties sslProperties = new Properties();
+        sslProperties.put("mail.smtp.host", "smtp.gmail.com");
+        sslProperties.put("mail.smtp.socketFactory.port", "465");
+        sslProperties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        sslProperties.put("mail.smtp.auth", "true");
+        sslProperties.put("mail.smtp.port", "465");
+        return sslProperties;
     }
 }
