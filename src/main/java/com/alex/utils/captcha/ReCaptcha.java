@@ -5,16 +5,13 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URL;
 
-import static com.alex.utils.validator.ObjectValidator.isNotEmpty;
-import static com.alex.utils.validator.ObjectValidator.isNotNull;
-import static com.alex.utils.validator.ObjectValidator.isNull;
+import static com.alex.utils.validator.ObjectValidator.*;
 
 /**
  * The class implements a set of methods
  * for working with google reCAPTCHA.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public final class ReCaptcha implements Captcha {
 
@@ -85,6 +82,7 @@ public final class ReCaptcha implements Captcha {
         this.serverKey = serverKey;
         this.parameter = parameter;
         this.header = header;
+        this.status = "";
     }
 
     /**
@@ -95,13 +93,12 @@ public final class ReCaptcha implements Captcha {
      */
     @Override
     public boolean isVerify(final HttpServletRequest request) {
-        this.status = null;
+        this.status = "";
         boolean result = false;
         if (isNotNull(request)) {
-            result = isVerify(
-                    request.getParameter(this.parameter),
-                    getIpAddress(request)
-            );
+            final String captcha = request.getParameter(this.parameter);
+            final String ipAddress = getIpAddress(request);
+            result = isVerify(captcha, ipAddress);
         }
         return result;
     }
@@ -114,20 +111,15 @@ public final class ReCaptcha implements Captcha {
      * @return true if captcha is verify, false otherwise.
      */
     @Override
-    public boolean isVerify(
-            final String captcha,
-            final String ipAddress
-    ) {
-        this.status = null;
+    public boolean isVerify(final String captcha, final String ipAddress) {
+        this.status = "";
         boolean result = false;
         if (isNotEmpty(captcha) && isNotEmpty(ipAddress)) {
             try {
-                result = new JsonParser(
-                        getResponse(
-                                new URL(this.url),
-                                captcha, ipAddress
-                        )
-                ).parse();
+                final URL url = new URL(this.url);
+                final String response = getResponse(url, captcha, ipAddress);
+                final JsonParser parser = new JsonParser(response);
+                result = parser.parse();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -172,14 +164,27 @@ public final class ReCaptcha implements Captcha {
      * @return The ip address.
      */
     private String getIpAddress(final HttpServletRequest request) {
-        String ipAddress = null;
+        final String ipAddress;
         if (isNotNull(request)) {
-            ipAddress = request.getHeader(this.header);
-            if (isNull(ipAddress)) {
-                ipAddress = request.getRemoteAddr();
-            }
+            ipAddress = getHeaderFromRequest(request);
+        } else {
+            ipAddress = null;
         }
         return ipAddress;
+    }
+
+    /**
+     * Returns the request header.
+     *
+     * @param request the request from client (newer null).
+     * @return The request header.
+     */
+    private String getHeaderFromRequest(final HttpServletRequest request) {
+        String header = request.getHeader(this.header);
+        if (isEmpty(header)) {
+            header = request.getRemoteAddr();
+        }
+        return header;
     }
 
     /**
@@ -198,9 +203,33 @@ public final class ReCaptcha implements Captcha {
     ) throws IOException {
         final HttpsURLConnection connection = getConnection(url);
         final String postParams = getPostParams(captcha, ipAddress);
-        Stream.write(postParams, connection.getOutputStream());
+        writeToConnection(postParams, connection);
         setStatus(url, postParams, connection.getResponseCode());
-        return Stream.read(connection.getInputStream());
+        return readFromConnection(connection);
+    }
+
+    /**
+     * Writes the incoming value to https URL connection.
+     *
+     * @param value      the value to write.
+     * @param connection the https URL connection.
+     * @throws IOException If an I/O error occurs.
+     */
+    private void writeToConnection(final String value, final HttpsURLConnection connection) throws IOException {
+        final HttpsURLStream httpsURLStream = new HttpsURLStream(connection);
+        httpsURLStream.write(value);
+    }
+
+    /**
+     * Reads response from the https URL connection.
+     *
+     * @param connection the https URL connection.
+     * @return the response.
+     * @throws IOException If an I/O error occurs.
+     */
+    private String readFromConnection(final HttpsURLConnection connection) throws IOException {
+        final HttpsURLStream httpsURLStream = new HttpsURLStream(connection);
+        return httpsURLStream.read();
     }
 
     /**
@@ -211,10 +240,11 @@ public final class ReCaptcha implements Captcha {
      * @throws IOException If an I/O error occurs.
      */
     private HttpsURLConnection getConnection(final URL url) throws IOException {
-        return new Connection(
+        final Connection connection = new Connection(
                 url, this.userAgent,
                 this.acceptLanguage, this.doOutput
-        ).getHttpsURLConnection();
+        );
+        return connection.getHttpsURLConnection();
     }
 
     /**
@@ -224,10 +254,7 @@ public final class ReCaptcha implements Captcha {
      * @param ipAddress the request ip address.
      * @return The post params.
      */
-    private String getPostParams(
-            final String captcha,
-            final String ipAddress
-    ) {
+    private String getPostParams(final String captcha, final String ipAddress) {
         return "secret=" + this.serverKey +
                 "&response=" + captcha +
                 "&remoteip=" + ipAddress;

@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
  * for working with google reCAPTCHA.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public interface Captcha {
 
@@ -17,7 +16,7 @@ public interface Captcha {
      * @param request a request from client.
      * @return true if captcha is verify, false otherwise.
      */
-    boolean isVerify(final HttpServletRequest request);
+    boolean isVerify(HttpServletRequest request);
 
     /**
      * Verifies captcha from ip address.
@@ -26,10 +25,7 @@ public interface Captcha {
      * @param ipAddress the request ip address.
      * @return true if captcha is verify, false otherwise.
      */
-    boolean isVerify(
-            final String captcha,
-            final String ipAddress
-    );
+    boolean isVerify(String captcha, String ipAddress);
 
     /**
      * Return a work status.
