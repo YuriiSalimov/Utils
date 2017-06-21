@@ -5,7 +5,6 @@ package com.alex.utils.loader;
  * with files in file system.
  *
  * @author Yuriy Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public interface Loader {
 
@@ -19,7 +18,13 @@ public interface Loader {
     /**
      * Saves a file in the file system.
      */
-    void write();
+
+    /**
+     * Saves a file in the file system.
+     *
+     * @return true if a file is saved, false otherwise.
+     */
+    boolean write();
 
     /**
      * Deletes a file with the rootPath.

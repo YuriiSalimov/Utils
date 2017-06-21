@@ -1,6 +1,5 @@
 package com.alex.utils.loader;
 
-import org.apache.log4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileOutputStream;
@@ -15,14 +14,8 @@ import static com.alex.utils.validator.ObjectValidator.isNotNull;
  * with multipart files in file system.
  *
  * @author Yuriy Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public final class MultipartFileLoader extends AbstractLoader implements Loader {
-
-    /**
-     * The object for logging information.
-     */
-    private final static Logger LOGGER = Logger.getLogger(MultipartFileLoader.class);
 
     /**
      * The file to write.
@@ -46,28 +39,33 @@ public final class MultipartFileLoader extends AbstractLoader implements Loader 
      * @param file the multipart file to write.
      * @param path the root path of a file.
      */
-    public MultipartFileLoader(
-            final MultipartFile file,
-            final String path
-    ) {
+    public MultipartFileLoader(final MultipartFile file, final String path) {
         super(path);
         this.file = file;
     }
 
     /**
      * Saves a file in the file system.
+     * Returns false if the file is null.
+     *
+     * @return true if a file is saved, false otherwise.
      */
     @Override
-    public void write() {
-        if (isNotNull(this.file)) {
-            final String path = getPathToFile();
-            checkPath(path);
-            try (final OutputStream stream = new FileOutputStream(path)) {
-                stream.write(this.file.getBytes());
-            } catch (IOException ex) {
-                LOGGER.error(ex.getMessage(), ex);
-            }
+    public boolean write() {
+        return isNotNull(this.file) && saveFile();
+    }
+
+    private boolean saveFile() {
+        boolean result = true;
+        final String path = getPathToFile();
+        checkPath(path);
+        try (OutputStream stream = new FileOutputStream(path)) {
+            stream.write(this.file.getBytes());
+        } catch (IOException ex) {
+            logException(ex);
+            result = false;
         }
+        return result;
     }
 
     /**
@@ -79,16 +77,8 @@ public final class MultipartFileLoader extends AbstractLoader implements Loader 
      */
     @Override
     public String read() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("Not supported by MultipartFileLoader");
-    }
-
-    /**
-     * Returns a multipart file.
-     *
-     * @return The multipart file or null if file not initialized.
-     */
-    public MultipartFile getFile() {
-        return this.file;
+        final String message = "Not supported by MultipartFileLoader class!";
+        throw new UnsupportedOperationException(message);
     }
 
     /**
@@ -97,6 +87,7 @@ public final class MultipartFileLoader extends AbstractLoader implements Loader 
      * @return The path to file.
      */
     private String getPathToFile() {
-        return isNotEmpty(getPath()) ? getPath() : this.file.getOriginalFilename();
+        final String path = getPath();
+        return isNotEmpty(path) ? path : this.file.getOriginalFilename();
     }
 }

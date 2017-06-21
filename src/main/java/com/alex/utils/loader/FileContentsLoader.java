@@ -1,7 +1,5 @@
 package com.alex.utils.loader;
 
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -12,19 +10,13 @@ import static com.alex.utils.validator.ObjectValidator.isNotEmpty;
  * with files in file system.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public final class FileContentsLoader extends AbstractLoader implements Loader {
 
     /**
-     * The object for logging information.
-     */
-    private static final Logger LOGGER = Logger.getLogger(FileContentsLoader.class);
-
-    /**
      * Thr text to save.
      */
-    private String text;
+    private final String text;
 
     /**
      * Constructor.
@@ -41,12 +33,9 @@ public final class FileContentsLoader extends AbstractLoader implements Loader {
      * @param path the root path of a file.
      * @param text the information to save.
      */
-    public FileContentsLoader(
-            final String path,
-            final String text
-    ) {
+    public FileContentsLoader(final String path, final String text) {
         super(path);
-        setText(text);
+        this.text = text;
     }
 
     /**
@@ -56,39 +45,64 @@ public final class FileContentsLoader extends AbstractLoader implements Loader {
      */
     @Override
     public String read() {
-        try (final RandomAccessFile in = new RandomAccessFile(getPath(), "r")) {
-            byte[] buf = new byte[(int) in.length()];
-            in.read(buf);
-            setText(new String(buf));
-        } catch (IOException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            setText("");
+        final String result;
+        final String path = getPath();
+        if (isNotEmpty(path)) {
+            result = readFromFile(path);
+        } else {
+            result = "";
         }
-        return this.text;
+        return result;
     }
 
     /**
      * Writes a information in file.
+     * Return false if the file path is null or empty.
+     *
+     * @return true if a file is saved, false otherwise.
      */
     @Override
-    public void write() {
-        checkPath(getPath());
-        try (final RandomAccessFile out = new RandomAccessFile(getPath(), "rw")) {
+    public boolean write() {
+        final String path = getPath();
+        return isNotEmpty(path) && writeToFile(path);
+    }
+
+    /**
+     * Reads a information from a file.
+     *
+     * @param path the file path to read.
+     * @return the information from a file.
+     */
+    private String readFromFile(final String path) {
+        String result;
+        try (RandomAccessFile in = new RandomAccessFile(path, "r")) {
+            byte[] buf = new byte[(int) in.length()];
+            in.read(buf);
+            result = new String(buf);
+        } catch (IOException ex) {
+            logException(ex);
+            result = "";
+        }
+        return result;
+    }
+
+    /**
+     * Writes a information in file.
+     *
+     * @param path the file path to write.
+     * @return true if a file is saved, false otherwise.
+     */
+    private boolean writeToFile(final String path) {
+        boolean result = true;
+        checkPath(path);
+        try (RandomAccessFile out = new RandomAccessFile(path, "rw")) {
             byte[] buf = this.text.getBytes();
             out.setLength(0);
             out.write(buf);
         } catch (IOException ex) {
-            LOGGER.error(ex.getMessage(), ex);
+            logException(ex);
+            result = false;
         }
-    }
-
-    /**
-     * Sets a new text.
-     * If parameter text is null or empty, then sets empty string.
-     *
-     * @param text the new text.
-     */
-    private void setText(final String text) {
-        this.text = isNotEmpty(text) ? text : "";
+        return result;
     }
 }
