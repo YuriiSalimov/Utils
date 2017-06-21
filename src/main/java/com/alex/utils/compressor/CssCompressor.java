@@ -7,17 +7,28 @@ import com.googlecode.htmlcompressor.compressor.YuiCssCompressor;
  * The class implements a set of methods for compressing CSS data.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public final class CssCompressor extends AbstractCompressor implements Compressor {
 
     /**
-     * Returns Compressor object.
+     * The instance of the Compressor class.
+     */
+    private final Compressor compressor;
+
+    /**
+     * Constructor.
+     */
+    public CssCompressor() {
+        this.compressor = new YuiCssCompressor();
+    }
+
+    /**
+     * Returns a compressor object
+     * of the YuiCssCompressor class.
      *
      * @return The CSS compressor instance.
      */
-    @Override
-    protected Compressor getCompressor() {
-        return new YuiCssCompressor();
+    Compressor getCompressor() {
+        return this.compressor;
     }
 }
