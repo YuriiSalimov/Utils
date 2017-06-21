@@ -1,17 +1,15 @@
-package com.alex.utils.util.sender;
+package com.alex.utils.sender;
 
-import com.alex.utils.sender.Sender;
-import com.alex.utils.sender.SenderImpl;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SenderImplTest {
+public class EmailSenderTest {
 
     private Sender sender;
 
     @Before
     public void beforeTests() {
-        this.sender = new SenderImpl(
+        this.sender = new EmailSender(
                 "subject",
                 "text",
                 "recipientEmail",

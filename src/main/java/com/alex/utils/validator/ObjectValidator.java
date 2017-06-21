@@ -11,7 +11,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * The class implements a set of methods for validating an incoming object.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public final class ObjectValidator {
 
@@ -19,14 +18,13 @@ public final class ObjectValidator {
      * Private Constructor.
      */
     private ObjectValidator() {
-
     }
 
     /**
      * Checks if a Object is null.
      * <pre>
      *     isNull(null) = true
-     *     isEmpty(new Object()) = false
+     *     isNull(new Object()) = false
      * </pre>
      *
      * @param object the Object to check, may be null
@@ -39,8 +37,8 @@ public final class ObjectValidator {
     /**
      * Checks if a Object is not null.
      * <pre>
-     *     isNull(null) = false
-     *     isEmpty(new Object()) = true
+     *     isNotNull(null) = false
+     *     isNotNull(new Object()) = true
      * </pre>
      *
      * @param object the Object to check, may be null

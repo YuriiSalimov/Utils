@@ -1,7 +1,5 @@
-package com.alex.utils.util.generator;
+package com.alex.utils.generator;
 
-import com.alex.utils.generator.Generator;
-import com.alex.utils.generator.StringGenerator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotEquals;

@@ -1,12 +1,13 @@
-package com.alex.utils.util.translator;
+package com.alex.utils.translator;
 
-import com.alex.utils.translator.Translator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public final class TranslatorTest {
+
+    private final static String ANY_STRING = "Some string...";
 
     @Test
     public void whenTranslateNullValueFromCyrillicToLatinThenReturnNotNull() {
@@ -53,7 +54,7 @@ public final class TranslatorTest {
 
     @Test
     public void whenTranslateValidValueToAsciiThenReturnTranslateValue() {
-        assertNotNull(Translator.toAscii("SoMe VaLuE"));
+        assertNotNull(Translator.toAscii(ANY_STRING));
     }
 
     @Test
@@ -85,11 +86,10 @@ public final class TranslatorTest {
 
     @Test
     public void whenTranslateValidValueToAsciiAndBackThenEqualsResults() {
-        final String value = "SoMe VaLuE";
-        final String temp = Translator.toAscii(value);
+        final String temp = Translator.toAscii(ANY_STRING);
         assertNotNull(temp);
         final String result = Translator.fromAscii(temp);
         assertNotNull(result);
-        assertEquals(value, result);
+        assertEquals(ANY_STRING, result);
     }
 }

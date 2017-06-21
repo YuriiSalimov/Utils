@@ -1,14 +1,12 @@
-package com.alex.utils.util.captcha;
+package com.alex.utils.captcha;
 
-import com.alex.utils.captcha.Captcha;
-import com.alex.utils.captcha.ReCaptcha;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 public class ReCaptchaTest {
@@ -40,6 +38,6 @@ public class ReCaptchaTest {
 
     @Test
     public void whenGetStatusThenReturnIt() {
-        assertNull(this.captcha.getStatus());
+        assertNotNull(this.captcha.getStatus());
     }
 }
