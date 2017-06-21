@@ -5,7 +5,6 @@ package com.alex.utils.generator;
  *
  * @param <T> extends Object.
  * @author Yuriy Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 public interface Generator<T> {
 
