@@ -1,15 +1,14 @@
 package com.alex.utils.cache;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.alex.utils.validator.ObjectValidator.isNotEmpty;
 
 /**
  * The class implements a set of methods for checking cache at old objects.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 final class CacheCleaner implements Runnable {
 
@@ -17,13 +16,13 @@ final class CacheCleaner implements Runnable {
      * The default maximum size of objects
      * which can be stored in the cache.
      */
-    private final static int DEFAULT_MAX_SIZE = 100;
+    private final static int DEFAULT_MAX_SIZE = 150;
 
     /**
      * The maximum size of objects
      * which can be stored in the cache.
      */
-    private int maxSize;
+    private final int maxSize;
 
     /**
      * The map where can be stored some objects.
@@ -37,12 +36,9 @@ final class CacheCleaner implements Runnable {
      * @param maxSize the maximum size of objects
      *                which can be stored in the cache.
      */
-    CacheCleaner(
-            final Map<Key, Object> cache,
-            final int maxSize
-    ) {
+    CacheCleaner(final Map<Key, Object> cache, final int maxSize) {
         this.cache = cache;
-        setMaxSize(maxSize);
+        this.maxSize = (maxSize > 0) ? maxSize : DEFAULT_MAX_SIZE;
     }
 
     /**
@@ -55,7 +51,7 @@ final class CacheCleaner implements Runnable {
     }
 
     /**
-     * Used to create a SenderImpl thread, starting
+     * Used to create a EmailSender thread, starting
      * the thread causes the object's run method
      * to be called in that separately executing thread.
      */
@@ -72,29 +68,21 @@ final class CacheCleaner implements Runnable {
      * @return The maximum size of objects
      * which can be stored in the cache.
      */
-    int getMaxSize() {
+    public int getMaxSize() {
         return this.maxSize;
-    }
-
-    /**
-     * Sets maximum size of objects which
-     * can be stored in the cache.
-     *
-     * @param maxSize the maximum size of objects which
-     *                can be stored in the cache.
-     */
-    void setMaxSize(final int maxSize) {
-        this.maxSize = (maxSize > 0) ? maxSize : DEFAULT_MAX_SIZE;
     }
 
     /**
      * Removes dead objects from cache.
      */
     private void removeDeadObject() {
-        this.cache.keySet()
+        final List<Key> deadKeys = this.cache.keySet()
                 .stream()
                 .filter(Key::isDead)
-                .forEach(this.cache::remove);
+                .collect(Collectors.toList());
+        if (isNotEmpty(deadKeys)) {
+            deadKeys.forEach(this.cache::remove);
+        }
     }
 
     /**
@@ -103,7 +91,8 @@ final class CacheCleaner implements Runnable {
     private void cleanCache() {
         if (isGreatMaxSize()) {
             final List<Key> keys = new ArrayList<>(this.cache.keySet());
-            Collections.sort(keys, new KeyComparator());
+            final Comparator<Key> comparator = new KeyComparator();
+            Collections.sort(keys, comparator);
             cleanToNormalSize(keys);
         }
     }
@@ -113,12 +102,12 @@ final class CacheCleaner implements Runnable {
      *
      * @param keys the keys list.
      */
-    private void cleanToNormalSize(final List<Key> keys) {
+    private void cleanToNormalSize(final Collection<Key> keys) {
         for (Key key : keys) {
-            this.cache.remove(key);
             if (isNormalSize()) {
                 break;
             }
+            this.cache.remove(key);
         }
     }
 
@@ -128,7 +117,7 @@ final class CacheCleaner implements Runnable {
      * @return true if cache.size() great maxSize, false otherwise.
      */
     private boolean isGreatMaxSize() {
-        return (this.cache.size() > getMaxSize());
+        return (this.cache.size() > this.maxSize);
     }
 
     /**
@@ -137,6 +126,6 @@ final class CacheCleaner implements Runnable {
      * @return true if cache.size() great normalSize, false otherwise.
      */
     private boolean isNormalSize() {
-        return (this.cache.size() <= getMaxSize() / 2);
+        return (this.cache.size() <= this.maxSize / 2);
     }
 }
