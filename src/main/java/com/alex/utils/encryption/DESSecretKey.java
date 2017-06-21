@@ -9,7 +9,6 @@ import static com.alex.utils.validator.ObjectValidator.isNull;
  * Class describes DES secret key.
  *
  * @author Yuriy Salimov (yuriy.alex.salimov@gmail.com)
- * @version 1.0
  */
 final class DESSecretKey implements SecretKey {
 
@@ -34,7 +33,7 @@ final class DESSecretKey implements SecretKey {
      * @param key the primary encoding format.
      */
     DESSecretKey(final byte[] key) {
-        if (key.length != 8) {
+        if (key.length > 8) {
             this.key = Arrays.copyOf(key, 8);
         } else {
             this.key = Arrays.copyOf(key, key.length);
