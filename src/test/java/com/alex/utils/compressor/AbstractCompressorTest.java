@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractCompressorTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
 
     @Test
     public void whenCompressThenReturnNotEmptyString() {

@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
  */
 public class AsciiImplTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
 
     @Test
     public void whenCallConstructorWithString() {

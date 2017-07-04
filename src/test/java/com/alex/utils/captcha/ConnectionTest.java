@@ -11,7 +11,7 @@ import java.net.URL;
  */
 public class ConnectionTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
 
     private static Connection connection;
 
@@ -20,9 +20,7 @@ public class ConnectionTest {
         try {
             connection = new Connection(
                     new URL("http://site.com?value=1"),
-                    ANY_STRING,
-                    ANY_STRING,
-                    true
+                    ANY_STRING, ANY_STRING, true
             );
         } catch (Exception e) {
             e.printStackTrace();

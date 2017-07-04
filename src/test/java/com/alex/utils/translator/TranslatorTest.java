@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNotNull;
 
 public final class TranslatorTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
 
     @Test
     public void whenTranslateNullValueFromCyrillicToLatinThenReturnNotNull() {

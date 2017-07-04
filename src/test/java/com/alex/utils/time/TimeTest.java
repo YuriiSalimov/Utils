@@ -9,8 +9,8 @@ import static org.junit.Assert.*;
 
 public final class TimeTest {
 
-    private final static String ANY_STRING = "Some string...";
     private final static String TIME = "12:00";
+    private final static String ANY_STRING = "Some unknown text.";
 
     @Test
     public void whenInitNotBlankTimeTimeThenGetNotBlankTime() {

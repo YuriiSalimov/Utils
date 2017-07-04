@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
  */
 public class KeyTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
     private static final long DEFAULT_TIMEOUT = 1000L;
 
     @Test

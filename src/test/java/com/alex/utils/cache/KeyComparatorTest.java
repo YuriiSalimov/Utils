@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class KeyComparatorTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
 
     private static KeyComparator comparator;
 

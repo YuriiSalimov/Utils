@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
  */
 public class HttpsURLStreamTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
 
     private static HttpsURLStream stream;
 

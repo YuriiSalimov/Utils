@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
  */
 public class Base64EncryptorTest {
 
-    private final static String ANY_STRING = "Some string...";
+    private final static String ANY_STRING = "Some unknown text.";
 
     private static Encryptor encryptor;
 
