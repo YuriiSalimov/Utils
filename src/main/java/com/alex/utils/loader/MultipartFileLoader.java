@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.alex.utils.validator.ObjectValidator.isNotEmpty;
+import static com.alex.utils.validator.ObjectValidator.isEmpty;
 import static com.alex.utils.validator.ObjectValidator.isNotNull;
 
 /**
@@ -87,7 +87,10 @@ public final class MultipartFileLoader extends AbstractLoader implements Loader 
      * @return The path to file.
      */
     private String getPathToFile() {
-        final String path = getPath();
-        return isNotEmpty(path) ? path : this.file.getOriginalFilename();
+        String path = getPath();
+        if (isEmpty(path)) {
+            path = this.file.getOriginalFilename();
+        }
+        return path;
     }
 }
