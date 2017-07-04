@@ -23,13 +23,9 @@ final class HttpsURLStream {
      * Constructor.
      *
      * @param connection the https URL connection.
-     * @throws IllegalArgumentException Throw exception when incoming connection is null.
      */
-    HttpsURLStream(final HttpsURLConnection connection) throws IllegalArgumentException {
-        if (isNull(connection)) {
-            final String message = "Incoming object of the HttpsURLConnection class is null!";
-            throw new IllegalArgumentException(message);
-        }
+    HttpsURLStream(final HttpsURLConnection connection) {
+        checkConnection(connection);
         this.connection = connection;
     }
 
@@ -84,5 +80,18 @@ final class HttpsURLStream {
      */
     private OutputStream getOutputStream() throws IOException {
         return this.connection.getOutputStream();
+    }
+
+    /**
+     * Checks the incoming connection (must be not null).
+     *
+     * @param connection the https URL connection.
+     * @throws IllegalArgumentException Throw exception when incoming connection is null.
+     */
+    private void checkConnection(final HttpsURLConnection connection) throws IllegalArgumentException {
+        if (isNull(connection)) {
+            final String message = "Incoming HttpsURLConnection is null!";
+            throw new IllegalArgumentException(message);
+        }
     }
 }

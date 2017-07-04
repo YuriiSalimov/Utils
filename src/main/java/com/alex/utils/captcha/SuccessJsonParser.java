@@ -8,37 +8,41 @@ import java.io.StringReader;
 import static com.alex.utils.validator.ObjectValidator.isNotEmpty;
 
 /**
- * The class implements a set of methods for working
- * with JsonParser parser.
+ * The class implements a set of methods for working with JSON parser.
  *
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
  */
-final class JsonParser {
+final class SuccessJsonParser {
 
     /**
-     * The JsonParser response.
+     * The 'success' associate.
+     */
+    private final static String ASSOCIATE = "success";
+
+    /**
+     * The JSON parser response.
      */
     private final String response;
 
     /**
      * Constructor.
      *
-     * @param response a JsonParser response.
+     * @param response a response to parse.
      */
-    JsonParser(final String response) {
+    SuccessJsonParser(final String response) {
         this.response = response;
     }
 
     /**
-     * Parses JsonParser response and return 'success' value.
+     * Parses the response and return 'success' value.
      *
-     * @return 'Success' value.
+     * @return The 'Success' value.
      */
     boolean parse() {
         final boolean result;
         if (isNotEmpty(this.response)) {
             final JsonObject json = readJson();
-            result = json.getBoolean("success");
+            result = json.getBoolean(ASSOCIATE);
         } else {
             result = false;
         }
