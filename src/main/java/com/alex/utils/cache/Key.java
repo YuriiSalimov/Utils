@@ -1,5 +1,6 @@
 package com.alex.utils.cache;
 
+import static com.alex.utils.cache.CacheConstants.KEY_TIMEOUT;
 import static com.alex.utils.validator.ObjectValidator.isNotNull;
 import static com.alex.utils.validator.ObjectValidator.isNull;
 
@@ -11,12 +12,6 @@ import static com.alex.utils.validator.ObjectValidator.isNull;
  * @author Yurii Salimov (yuriy.alex.salimov@gmail.com)
  */
 final class Key<T> implements Comparable {
-
-    /**
-     * The default lifetime of objects (milliseconds).
-     * 864000000 milliseconds = 10 days
-     */
-    private static final long DEFAULT_TIMEOUT = 864000000L;
 
     /**
      * Value of the Key.
@@ -37,7 +32,7 @@ final class Key<T> implements Comparable {
     Key(final T value, final long milliseconds) {
         this.value = value;
         this.timeout = System.currentTimeMillis() +
-                (milliseconds > 0 ? milliseconds : DEFAULT_TIMEOUT);
+                (milliseconds > 0 ? milliseconds : KEY_TIMEOUT);
     }
 
     /**
@@ -46,7 +41,7 @@ final class Key<T> implements Comparable {
      * @param value the object key in the cache.
      */
     Key(final T value) {
-        this(value, DEFAULT_TIMEOUT);
+        this(value, 0);
     }
 
     /**

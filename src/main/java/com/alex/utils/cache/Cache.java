@@ -16,12 +16,12 @@ public final class Cache {
     /**
      * The map where can be stored some objects.
      */
-    private static volatile Map<Key, Object> cache = new ConcurrentHashMap<>();
+    private static volatile Map<Key, Object> cache;
 
     /**
      * Сache is modified.
      */
-    private static volatile boolean isNewCache = true;
+    private static volatile boolean isNewCache;
 
     /**
      * Static constructor.
@@ -29,7 +29,9 @@ public final class Cache {
      * for cleaning the cache.
      */
     static {
-        final CacheCleaner cleaner = new CacheCleaner(getCache());
+        cache = new ConcurrentHashMap<>();
+        isNewCache = true;
+        final CacheCleaner cleaner = new CacheCleaner(cache);
         new CacheScheduledExecutor(cleaner).go();
     }
 
@@ -37,26 +39,6 @@ public final class Cache {
      * Private constructor.
      */
     private Cache() {
-    }
-
-    /**
-     * Saves object in the cache.
-     *
-     * @param <T>    the type of a key.
-     * @param key    the object key in the cache.
-     * @param object the object to save.
-     * @return The saving object.
-     */
-    private static <T> Object put(
-            final Key<T> key,
-            final Object object
-    ) {
-        Object savingObject = null;
-        if (isNotNull(key) && isNotNull(object)) {
-            savingObject = getCache().put(key, object);
-            setNewCache();
-        }
-        return isNotNull(savingObject) ? savingObject : object;
     }
 
     /**
@@ -73,7 +55,8 @@ public final class Cache {
             final Object object,
             final long milliseconds
     ) {
-        return put(new Key<>(key, milliseconds), object);
+        final Key<T> keyObject = new Key<>(key, milliseconds);
+        return put(keyObject, object);
     }
 
     /**
@@ -88,7 +71,8 @@ public final class Cache {
             final T key,
             final Object object
     ) {
-        return put(key, object, -1L);
+        final long milliseconds = -1L;
+        return put(key, object, milliseconds);
     }
 
     /**
@@ -107,7 +91,8 @@ public final class Cache {
             final long seconds,
             final long milliseconds
     ) {
-        return put(key, object, milliseconds + 1000 * seconds);
+        final long _milliseconds = milliseconds + 1000 * seconds;
+        return put(key, object, _milliseconds);
     }
 
     /**
@@ -128,7 +113,8 @@ public final class Cache {
             final long seconds,
             final long milliseconds
     ) {
-        return put(key, object, seconds + 60 * minutes, milliseconds);
+        final long _seconds = seconds + 60 * minutes;
+        return put(key, object, _seconds, milliseconds);
     }
 
     /**
@@ -151,7 +137,8 @@ public final class Cache {
             final long seconds,
             final long milliseconds
     ) {
-        return put(key, object, minutes + 60 * hours, seconds, milliseconds);
+        final long _minutes = minutes + 60 * hours;
+        return put(key, object, _minutes, seconds, milliseconds);
     }
 
     /**
@@ -186,7 +173,8 @@ public final class Cache {
             final long seconds,
             final long milliseconds
     ) {
-        putAll(map, milliseconds + 1000 * seconds);
+        final long _milliseconds = milliseconds + 1000 * seconds;
+        putAll(map, _milliseconds);
     }
 
     /**
@@ -204,7 +192,8 @@ public final class Cache {
             final long seconds,
             final long milliseconds
     ) {
-        putAll(map, seconds + 60 * minutes, milliseconds);
+        final long _seconds = seconds + 60 * minutes;
+        putAll(map, _seconds, milliseconds);
     }
 
     /**
@@ -224,7 +213,8 @@ public final class Cache {
             final long seconds,
             final long milliseconds
     ) {
-        putAll(map, minutes + 60 * hours, seconds, milliseconds);
+        final long _minutes = minutes + 60 * hours;
+        putAll(map, _minutes, seconds, milliseconds);
     }
 
     /**
@@ -234,7 +224,7 @@ public final class Cache {
      * @param map the map with objects to save.
      */
     public static <T> void putAll(final Map<T, Object> map) {
-        final long milliseconds = -1;
+        final long milliseconds = -1L;
         putAll(map, milliseconds);
     }
 
@@ -264,7 +254,7 @@ public final class Cache {
     public static Collection<Object> getAll(final String subKey) {
         final List<Object> objects = new ArrayList<>();
         if (isNotEmpty(subKey)) {
-            getCache().keySet().stream()
+            cache.keySet().stream()
                     .filter(key -> containsKey(key, subKey))
                     .forEach(key -> objects.add(get(key)));
         }
@@ -280,7 +270,8 @@ public final class Cache {
      */
     public static <T> void remove(final T key) {
         if (isNotNull(key)) {
-            remove(new Key<>(key));
+            final Key<T> _key = new Key<>(key);
+            remove(_key);
         }
     }
 
@@ -326,7 +317,7 @@ public final class Cache {
      * Clears the cache.
      */
     public static void clear() {
-        getCache().clear();
+        cache.clear();
     }
 
     /**
@@ -336,7 +327,7 @@ public final class Cache {
      */
     public static void clear(final Class object) {
         if (isNotNull(object)) {
-            getCache().entrySet()
+            cache.entrySet()
                     .stream()
                     .filter(entry -> filterByClass(entry, object))
                     .forEach(entry -> remove(entry.getKey()));
@@ -382,6 +373,26 @@ public final class Cache {
     }
 
     /**
+     * Saves object in the cache.
+     *
+     * @param <T>    the type of a key.
+     * @param key    the object key in the cache.
+     * @param object the object to save.
+     * @return The saving object.
+     */
+    private static <T> Object put(
+            final Key<T> key,
+            final Object object
+    ) {
+        Object savingObject = null;
+        if (isNotNull(key) && isNotNull(object)) {
+            savingObject = cache.put(key, object);
+            setNewCache();
+        }
+        return isNotNull(savingObject) ? savingObject : object;
+    }
+
+    /**
      * Checks if exist object with the key in the cache.
      *
      * @param <T> the type of a key.
@@ -403,7 +414,7 @@ public final class Cache {
     private static <T> Object get(final Key<T> key) {
         Object object = null;
         if (isNotNull(key)) {
-            object = getCache().get(key);
+            object = cache.get(key);
         }
         return object;
     }
@@ -417,7 +428,7 @@ public final class Cache {
      */
     private static <T> void remove(final Key<T> key) {
         if (isNotNull(key)) {
-            getCache().remove(key);
+            cache.remove(key);
             setNewCache();
         }
     }
@@ -432,7 +443,7 @@ public final class Cache {
         Map<String, String> result = new HashMap<>();
         String keyValueToString;
         String valueClassName;
-        for (Map.Entry<Key, Object> entry : getCache().entrySet()) {
+        for (Map.Entry<Key, Object> entry : cache.entrySet()) {
             keyValueToString = entry.getKey().getValue().toString();
             valueClassName = entry.getValue().getClass().getName();
             result.put(keyValueToString, valueClassName);
@@ -486,14 +497,5 @@ public final class Cache {
      */
     private static void setOldCache() {
         isNewCache = false;
-    }
-
-    /**
-     * Returns the cache map.
-     *
-     * @return The cache map.
-     */
-    private static Map<Key, Object> getCache() {
-        return cache;
     }
 }
